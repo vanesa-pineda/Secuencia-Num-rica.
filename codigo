@@ -1,0 +1,90 @@
+import pygame
+import random
+
+# Inicializar pygame
+pygame.init()
+
+# Configuración de la pantalla
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Juego de Secuencia Numérica")
+
+# Colores
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+BLUE = (100, 149, 237)
+GREEN = (34, 139, 34)
+RED = (220, 20, 60)
+
+# Fuente
+font = pygame.font.Font(None, 40)
+
+# Funciones para generar secuencias
+def generate_sequence():
+    types = ["doble", "fibonacci", "potencias", "aritmetica"]
+    seq_type = random.choice(types)
+    
+    if seq_type == "doble":
+        start = random.randint(1, 5)
+        seq = [start * (2 ** i) for i in range(4)]
+    elif seq_type == "fibonacci":
+        seq = [random.randint(1, 5), random.randint(1, 5)]
+        for _ in range(2):
+            seq.append(seq[-1] + seq[-2])
+    elif seq_type == "potencias":
+        base = random.randint(2, 5)
+        seq = [base ** i for i in range(1, 5)]
+    else:  # aritmética
+        start = random.randint(1, 10)
+        step = random.randint(2, 5)
+        seq = [start + step * i for i in range(4)]
+    
+    correct_answer = seq[-1]
+    seq[-1] = "?"
+    return seq, correct_answer
+
+def draw_text(text, x, y, color=WHITE):
+    text_surface = font.render(text, True, color)
+    screen.blit(text_surface, (x, y))
+
+# Juego principal
+def game_loop():
+    running = True
+    sequence, correct_answer = generate_sequence()
+    options = [correct_answer, correct_answer + random.randint(1, 5), correct_answer - random.randint(1, 5)]
+    random.shuffle(options)
+    score = 0
+    
+    while running:
+        screen.fill(BLUE)
+        draw_text("Completa la secuencia:", 200, 80)
+        draw_text(" ".join(map(str, sequence)), 350, 150, GREEN)
+        draw_text(f"Puntuación: {score}", 50, 50, WHITE)
+        
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        
+        for i, option in enumerate(options):
+            pygame.draw.rect(screen, WHITE, (300, 250 + i * 80, 200, 60))
+            draw_text(str(option), 375, 270 + i * 80, BLACK)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for i, option in enumerate(options):
+                    if 300 < mouse_x < 500 and (250 + i * 80) < mouse_y < (310 + i * 80):
+                        if option == correct_answer:
+                            score += 10
+                            print("Correcto!")
+                        else:
+                            score -= 5
+                            print("Incorrecto!")
+                        sequence, correct_answer = generate_sequence()
+                        options = [correct_answer, correct_answer + random.randint(1, 5), correct_answer - random.randint(1, 5)]
+                        random.shuffle(options)
+        
+        pygame.display.flip()
+    
+    pygame.quit()
+
+game_loop()
